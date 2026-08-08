@@ -2,8 +2,8 @@
 // Self-contained for Bubble Pop (no cross-module dependency).
 
 const KEYS = {
-  sound: 'bp_soundEnabled',
-  haptics: 'bp_hapticsEnabled',
+  sound: 'soundEnabled',
+  haptics: 'hapticsEnabled',
   aimGuide: 'bp_aimGuide',
   best: 'bp_bestScore',
   savedGame: 'bp_savedGame',

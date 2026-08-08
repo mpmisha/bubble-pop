@@ -1,6 +1,6 @@
 // Offline-first service worker. Caches the whole app shell so Bubble Pop runs
 // with no network at all once installed to the home screen.
-const CACHE = 'bubble-pop-v1';
+const CACHE = 'bubble-pop-v2';
 
 const ASSETS = [
   './',

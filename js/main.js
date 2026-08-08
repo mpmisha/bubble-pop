@@ -113,8 +113,17 @@ const hasHubParam = new URLSearchParams(location.search).has('hub');
 const backHubBtn = $('btn-back-hub');
 const embeddedInHub = window.self !== window.top;
 backHubBtn.href = HUB_URL;
-// Only show Back-to-Games when launched from the hub.
-backHubBtn.hidden = !hasHubParam;
+// Sound/Vibration are global now — controlled from the hub. When embedded, hide
+// those rows and the redundant in-panel Back button (the hub's player bar does
+// the going-back). The long-aim-guide toggle is specific to this game and stays.
+if (embeddedInHub) {
+  toggleSound.closest('.row').hidden = true;
+  toggleHaptics.closest('.row').hidden = true;
+  backHubBtn.hidden = true;
+} else {
+  // Only show Back-to-Games when launched from the hub.
+  backHubBtn.hidden = !hasHubParam;
+}
 backHubBtn.addEventListener('click', (e) => {
   scene.sound.play('button');
   // When embedded in the hub's in-app player, ask the hub to close us instead
