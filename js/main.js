@@ -1,6 +1,10 @@
 // Entry point: wires the DOM HUD/overlays to the canvas GameScene.
 import { GameScene } from './game.js';
 import { SettingsStore } from './storage.js';
+import { resolveLang, applyLang, t, isValidLang } from './i18n.js';
+
+// Apply the platform language (shared same-origin with the hub) before wiring UI.
+applyLang(resolveLang());
 
 const $ = (id) => document.getElementById(id);
 
@@ -35,7 +39,7 @@ let resetArmed = false;
 let resetTimer = null;
 
 function syncSettingsUi() {
-  settingsBest.textContent = `Best score: ${scene.visibleBestScore}`;
+  settingsBest.textContent = `${t('bestScore')}: ${scene.visibleBestScore}`;
   toggleSound.classList.toggle('on', SettingsStore.isSoundEnabled);
   toggleHaptics.classList.toggle('on', SettingsStore.areHapticsEnabled);
   toggleAim.classList.toggle('on', SettingsStore.showLongAimGuide);
@@ -45,7 +49,7 @@ function syncSettingsUi() {
 function disarmReset() {
   resetArmed = false;
   if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
-  resetBtn.textContent = 'Reset Best Score';
+  resetBtn.textContent = t('resetBest');
 }
 
 function openSettings() {
@@ -88,13 +92,13 @@ resetBtn.addEventListener('click', () => {
   scene.sound.play('button');
   if (!resetArmed) {
     resetArmed = true;
-    resetBtn.textContent = 'Tap again to confirm';
+    resetBtn.textContent = t('tapConfirm');
     resetTimer = setTimeout(disarmReset, 3000);
     return;
   }
   disarmReset();
   scene.resetBestScore();
-  settingsBest.textContent = 'Best score: 0';
+  settingsBest.textContent = `${t('bestScore')}: 0`;
 });
 
 $('btn-close').addEventListener('click', () => {
@@ -143,12 +147,16 @@ settingsOverlay.querySelector('[data-dismiss="settings"]').addEventListener('cli
 // ---- Game over overlay ----
 
 const gameoverOverlay = $('gameover-overlay');
+let lastGameOver = null;
 
-function openGameOver({ score, bestScore, isNewBest }) {
+function openGameOver(data) {
+  lastGameOver = data;
+  const { score, bestScore, isNewBest } = data;
   $('go-emoji').textContent = isNewBest ? '🎉' : '🫧';
-  $('go-title').textContent = isNewBest ? 'New Best!' : 'No More Room';
+  $('go-title').textContent = isNewBest ? t('newBest') : t('noMoreRoom');
+  $('go-caption').textContent = t('yourScore');
   $('go-score').textContent = String(score);
-  $('go-best').textContent = `👑 Best: ${bestScore}`;
+  $('go-best').textContent = `👑 ${t('best')}: ${bestScore}`;
   gameoverOverlay.hidden = false;
 }
 
@@ -159,10 +167,76 @@ $('btn-play-again').addEventListener('click', () => {
   scene.startNewGame();
 });
 
-// ---- Service worker (offline support) ----
+// ---- Localization of static DOM chrome ----
+// Called on load and whenever the platform language changes live. Canvas text
+// re-localizes automatically on the next animation frame via i18n's t().
+function applyDomStrings() {
+  $('settings-title').textContent = t('settings');
+  $('settings-panel').setAttribute('aria-label', t('settingsAria'));
+  $('label-sound').textContent = t('sound');
+  $('label-haptics').textContent = t('vibration');
+  $('label-aim').textContent = t('longAimGuide');
+  $('btn-new-game').textContent = t('newGame');
+  $('btn-back-hub').textContent = t('backToGames');
+  $('btn-close').textContent = t('close');
+  $('gear').setAttribute('aria-label', t('settingsAria'));
+  $('gameover-panel').setAttribute('aria-label', t('roundOverAria'));
+  // Reset button reflects its armed/disarmed state.
+  resetBtn.textContent = resetArmed ? t('tapConfirm') : t('resetBest');
+  // Best-score line inside settings (visible only while the panel is open).
+  settingsBest.textContent = `${t('bestScore')}: ${scene.visibleBestScore}`;
+  // Re-localize the round-over overlay if it is currently shown.
+  if (!gameoverOverlay.hidden && lastGameOver) openGameOver(lastGameOver);
+}
 
+applyDomStrings();
+
+// Live language updates from the hub (same-origin postMessage only).
+window.addEventListener('message', (e) => {
+  if (e.origin !== location.origin) return;
+  const d = e.data;
+  if (d && d.type === 'playground:lang' && isValidLang(d.lang)) {
+    applyLang(d.lang);
+    applyDomStrings();
+  }
+});
+
+// ---- Service worker (offline support + reliable auto-update) ----
+// The SW caches the whole shell, so without an update path an old build can
+// keep running. We check for updates, promote a freshly-installed worker to
+// active, and reload once it takes control so users always get the new build.
 if ('serviceWorker' in navigator) {
+  const hadController = !!navigator.serviceWorker.controller;
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    // Skip the very first install (no prior controller) — nothing to refresh.
+    if (!hadController || refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+    navigator.serviceWorker.register('./service-worker.js').then((reg) => {
+      reg.update().catch(() => {});
+
+      const promote = (worker) => {
+        if (!worker) return;
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+            worker.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      };
+      // A worker already waiting from a previous check.
+      if (reg.waiting && navigator.serviceWorker.controller) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      reg.addEventListener('updatefound', () => promote(reg.installing));
+
+      // Re-check for updates when the app returns to the foreground.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+    }).catch(() => {});
   });
 }

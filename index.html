@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -35,28 +35,28 @@
   <!-- Settings overlay -->
   <div class="overlay" id="settings-overlay" hidden>
     <div class="scrim" data-dismiss="settings"></div>
-    <div class="panel" role="dialog" aria-label="Settings">
-      <h2>Settings</h2>
+    <div class="panel" role="dialog" aria-label="Settings" id="settings-panel">
+      <h2 id="settings-title">Settings</h2>
       <p class="panel-best" id="settings-best">Best score: 0</p>
 
       <div class="row">
-        <span class="row-label">Sound</span>
+        <span class="row-label" id="label-sound">Sound</span>
         <button class="toggle" id="toggle-sound" role="switch"><span class="knob"></span></button>
       </div>
 
       <div class="row">
-        <span class="row-label">Vibration</span>
+        <span class="row-label" id="label-haptics">Vibration</span>
         <button class="toggle" id="toggle-haptics" role="switch"><span class="knob"></span></button>
       </div>
 
       <div class="row">
-        <span class="row-label">Long aim guide</span>
+        <span class="row-label" id="label-aim">Long aim guide</span>
         <button class="toggle" id="toggle-aim" role="switch"><span class="knob"></span></button>
       </div>
 
       <button class="btn primary" id="btn-new-game">New Game</button>
       <button class="btn danger" id="btn-reset-best">Reset Best Score</button>
-      <a class="btn secondary" id="btn-back-hub" hidden>← Back to Games</a>
+      <a class="btn secondary back-hub" id="btn-back-hub" hidden>Back to Games</a>
       <button class="btn secondary" id="btn-close">Close</button>
     </div>
   </div>
@@ -64,10 +64,10 @@
   <!-- Round over overlay (soft, never a scary game-over) -->
   <div class="overlay" id="gameover-overlay" hidden>
     <div class="scrim"></div>
-    <div class="panel gameover" role="dialog" aria-label="Round over">
+    <div class="panel gameover" role="dialog" aria-label="Round over" id="gameover-panel">
       <div class="go-emoji" id="go-emoji">🫧</div>
       <h2 id="go-title">No More Room</h2>
-      <p class="go-caption">Your score</p>
+      <p class="go-caption" id="go-caption">Your score</p>
       <div class="go-score" id="go-score">0</div>
       <p class="go-best" id="go-best">👑 Best: 0</p>
       <button class="btn primary" id="btn-play-again">Play Again</button>

@@ -9,6 +9,12 @@
   font-family: "Baloo 2", system-ui, -apple-system, sans-serif;
 }
 
+/* Baloo 2 has no Hebrew glyphs — use rounded Fredoka for Hebrew / RTL. */
+:root[lang="he"],
+:root[dir="rtl"] {
+  font-family: "Fredoka", "Baloo 2", system-ui, -apple-system, sans-serif;
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 /* The hidden attribute must win over explicit display (rows, buttons). */
@@ -60,7 +66,7 @@ html, body {
 
 .best-badge {
   position: absolute;
-  left: 20px;
+  inset-inline-start: 20px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -81,7 +87,7 @@ html, body {
 
 .gear {
   position: absolute;
-  right: 16px;
+  inset-inline-end: 16px;
   width: 46px;
   height: 46px;
   border-radius: 14px;
@@ -186,14 +192,14 @@ html, body {
 .toggle .knob {
   position: absolute;
   top: 3px;
-  left: 3px;
+  inset-inline-start: 3px;
   width: 26px;
   height: 26px;
   border-radius: 50%;
   background: #fff;
-  transition: left 0.15s ease;
+  transition: inset-inline-start 0.15s ease;
 }
-.toggle.on .knob { left: 27px; }
+.toggle.on .knob { inset-inline-start: 27px; }
 
 .btn {
   display: block;
@@ -214,6 +220,10 @@ html, body {
 .btn.primary { background: var(--primary); }
 .btn.secondary { background: var(--secondary); }
 .btn.danger { background: var(--danger); }
+
+/* Back-to-Games arrow: points left in LTR, mirrors to right in RTL. */
+.btn.back-hub::before { content: "\2190\00a0"; }
+[dir="rtl"] .btn.back-hub::before { content: "\2192\00a0"; }
 
 /* Game over */
 .gameover .go-emoji { font-size: 46px; }

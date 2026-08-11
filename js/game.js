@@ -8,6 +8,7 @@ import { drawBubble } from './bubble.js';
 import { SkinCatalog } from './skins.js';
 import { SoundPlayer, Haptics } from './audio.js';
 import { SettingsStore, GameStateStore } from './storage.js';
+import { t, fontFamily } from './i18n.js';
 
 const COLS = 9;              // even rows have 9 cells, odd rows 8
 const COLOR_COUNT = 6;       // limited palette so matching is easy for little kids
@@ -391,7 +392,7 @@ class GameScene {
   _celebrateClear() {
     this.sound.play('levelUp');
     this.haptics.clearLines();
-    this.toast = { text: 'You cleared it! 🎉', until: nowSec() + 1.6 };
+    this.toast = { key: 'cleared', until: nowSec() + 1.6 };
     // Refill fresh rows so play continues, relaxed and endless.
     setTimeout(() => {
       if (this.roundOver) return;
@@ -591,10 +592,10 @@ class GameScene {
     drawBubble(ctx, nx, ny, r * 0.62, this.colorAt(this.next), { shadow: false });
     ctx.restore();
     ctx.save();
-    ctx.font = `600 ${Math.round(r * 0.5)}px "Baloo 2", sans-serif`;
+    ctx.font = `600 ${Math.round(r * 0.5)}px ${fontFamily()}`;
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.textAlign = 'center';
-    ctx.fillText('next', nx, ny + r * 0.95);
+    ctx.fillText(t('next'), nx, ny + r * 0.95);
     ctx.restore();
 
     // Current bubble in the shooter (hide while a shot is flying).
@@ -614,11 +615,11 @@ class GameScene {
     const ctx = this.ctx;
     ctx.save();
     ctx.textAlign = 'center';
-    ctx.font = `800 ${Math.round(this.geo.r * 0.95)}px "Baloo 2", sans-serif`;
+    ctx.font = `800 ${Math.round(this.geo.r * 0.95)}px ${fontFamily()}`;
     ctx.fillStyle = 'rgba(255,255,255,0.95)';
     ctx.shadowColor = 'rgba(0,0,0,0.35)';
     ctx.shadowBlur = 8;
-    ctx.fillText(this.toast.text, this.cssW / 2, this.cssH * 0.42);
+    ctx.fillText(`${t(this.toast.key)} 🎉`, this.cssW / 2, this.cssH * 0.42);
     ctx.restore();
   }
 }
