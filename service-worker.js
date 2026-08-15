@@ -8,7 +8,7 @@
 //    online, falling back to cache offline). Other same-origin assets are
 //    cache-first against the versioned cache. The paired registration in
 //    main.js reloads the page on controllerchange so users get the new build.
-const CACHE = 'bubble-pop-v6';
+const CACHE = 'bubble-pop-v7';
 
 const ASSETS = [
   './',
